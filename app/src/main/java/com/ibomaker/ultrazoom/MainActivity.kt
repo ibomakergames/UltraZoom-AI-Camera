@@ -103,6 +103,7 @@ class MainActivity : ComponentActivity() {
         var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
         var torchEnabled by remember { mutableStateOf(false) }
         var selectedZoom by remember { mutableFloatStateOf(1f) }
+        var actualZoom by remember { mutableFloatStateOf(1f) }
         var maxZoom by remember { mutableFloatStateOf(1f) }
         var camera by remember { mutableStateOf<Camera?>(null) }
         var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
@@ -142,6 +143,7 @@ class MainActivity : ComponentActivity() {
                         imageCapture = capture
                         maxZoom = boundCamera.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
                         selectedZoom = 1f
+                        actualZoom = 1f
                         torchEnabled = false
                     } catch (error: Exception) {
                         Toast.makeText(context, "تعذر تشغيل الكاميرا: ${error.localizedMessage}", Toast.LENGTH_LONG).show()
@@ -197,7 +199,7 @@ class MainActivity : ComponentActivity() {
                                 .clip(RoundedCornerShape(10.dp)).background(Color(0x99000000)).padding(9.dp)
                         ) {
                             Text("LIVE PREVIEW", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                            Text("Zoom ${"%.1f".format(Locale.US, selectedZoom)}x", color = Color(0xFFDDD6FE), fontSize = 12.sp)
+                            Text("Actual ${"%.1f".format(Locale.US, actualZoom)}x", color = Color(0xFFDDD6FE), fontSize = 12.sp)
                         }
                     } else {
                         Column(
@@ -240,6 +242,7 @@ class MainActivity : ComponentActivity() {
                                 .clickable {
                                     selectedZoom = zoom
                                     val supported = zoom.coerceAtMost(maxZoom.coerceAtLeast(1f))
+                                    actualZoom = supported
                                     camera?.cameraControl?.setZoomRatio(supported)
                                     if (zoom > maxZoom) {
                                         Toast.makeText(context, "الحد الأقصى المدعوم حالياً ${"%.1f".format(Locale.US, maxZoom)}x", Toast.LENGTH_SHORT).show()
