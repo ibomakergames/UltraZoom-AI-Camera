@@ -291,10 +291,10 @@ class MainActivity : ComponentActivity() {
                                     if (recording != null) {
                                         recording?.stop()
                                         recording = null
-                                    } else if (!hasAudioPermission) audioPermission.launch(Manifest.permission.RECORD_AUDIO) {
+                                    } else if (!hasAudioPermission) {
                                         audioPermission.launch(Manifest.permission.RECORD_AUDIO)
                                     } else {
-                                        startVideo(videoCapture, hasAudioPermission) { newRecording -> recording = newRecording }
+                                        startVideo(videoCapture, hasAudioPermission, onStarted = { newRecording -> recording = newRecording })
                                     }
                                 } else takePhoto(imageCapture)
                             },
