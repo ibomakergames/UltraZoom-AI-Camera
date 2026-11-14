@@ -14,6 +14,7 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -30,6 +31,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.material3.Slider
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -64,7 +69,7 @@ import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 
 private val AppBackground = Color(0xFF080A0F)
 private val Panel = Color(0xFF151922)
@@ -194,6 +199,36 @@ class MainActivity : ComponentActivity() {
                             factory = { previewView },
                             modifier = Modifier.fillMaxSize()
                         )
+                        // Tap to focus and pinch with two fingers to zoom.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(camera) {
+                                    detectTapGestures { point ->
+                                        val activeCamera = camera ?: return@detectTapGestures
+                                        try {
+                                            val meteringPoint = previewView.meteringPointFactory
+                                                .createPoint(point.x, point.y)
+                                            val action = FocusMeteringAction.Builder(meteringPoint)
+                                                .setAutoCancelDuration(3, TimeUnit.SECONDS)
+                                                .build()
+                                            activeCamera.cameraControl.startFocusAndMetering(action)
+                                        } catch (_: Exception) {
+                                            // Some front cameras do not expose focus metering.
+                                        }
+                                    }
+                                }
+                                .pointerInput(camera, maxZoom) {
+                                    detectTransformGestures { _, _, zoomChange, _ ->
+                                        val activeCamera = camera ?: return@detectTransformGestures
+                                        val current = activeCamera.cameraInfo.zoomState.value?.zoomRatio ?: 1f
+                                        val target = (current * zoomChange).coerceIn(1f, maxZoom.coerceAtLeast(1f))
+                                        actualZoom = target
+                                        selectedZoom = target
+                                        activeCamera.cameraControl.setZoomRatio(target)
+                                    }
+                                }
+                        )
                         Column(
                             modifier = Modifier.align(Alignment.TopStart).padding(14.dp)
                                 .clip(RoundedCornerShape(10.dp)).background(Color(0x99000000)).padding(9.dp)
@@ -261,8 +296,21 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                if (maxZoom > 1.05f) {
+                    Slider(
+                        value = actualZoom.coerceIn(1f, maxZoom),
+                        onValueChange = { value ->
+                            actualZoom = value
+                            selectedZoom = value
+                            camera?.cameraControl?.setZoomRatio(value)
+                        },
+                        valueRange = 1f..maxZoom,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 if (selectedZoom > maxZoom) {
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(2.dp))
                     Text(
                         "هذا الهاتف لا يتيح هذا المستوى عبر واجهة الكاميرا الحالية؛ لم نضف تكبيراً وهمياً.",
                         color = Color(0xFFFBBF24),
