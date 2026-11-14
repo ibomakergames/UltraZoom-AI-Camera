@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
             if (!hasCameraPermission) cameraPermission.launch(Manifest.permission.CAMERA)
         }
 
-        DisposableEffect(hasCameraPermission, lensFacing) {
+        DisposableEffect(hasCameraPermission, lensFacing, lowProcessing) {
             if (!hasCameraPermission) {
                 onDispose { }
             } else {
@@ -291,7 +291,7 @@ class MainActivity : ComponentActivity() {
                                     if (recording != null) {
                                         recording?.stop()
                                         recording = null
-                                    } else startVideo(videoCapture, hasAudioPermission) { recording = it }
+                                    } else if (!hasAudioPermission) audioPermission.launch(Manifest.permission.RECORD_AUDIO)\n                                    else startVideo(videoCapture, hasAudioPermission) { recording = it }
                                 } else takePhoto(imageCapture)
                             },
                         contentAlignment = Alignment.Center
