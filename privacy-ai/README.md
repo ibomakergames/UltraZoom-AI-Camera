@@ -1,15 +1,27 @@
 # Privacy AI for Android
 
-A standalone Kotlin + Jetpack Compose prototype, kept in this repository under `privacy-ai/` so it does not modify the existing UltraZoom AI Camera app.
+A standalone Kotlin + Jetpack Compose prototype in `privacy-ai/`. It is kept separate from the existing UltraZoom AI Camera app.
 
-## Build
-Open this folder as an Android Studio project, or use the repository workflow to build the debug APK.
+## Build locally
 
-## Current prototype
-- Arabic, right-to-left dark interface with purple accents.
-- Persisted local preferences for protection, notification setting, schedule setting, and privacy-level slider.
-- Uses Android `FLAG_SECURE` to block screenshots and screen recording **inside the Privacy AI app window only**.
-- Clearly labels notification, app-selection, and scheduling controls as setup placeholders until their required system integrations are implemented.
+Open the `privacy-ai/` folder in Android Studio and let Gradle sync, then build the app configuration. The GitHub Actions workflow also builds a debug APK on pushes and pull requests that touch this project.
 
-## Important limitation
-A normal app cannot reproduce Samsung's hardware Privacy Display viewing-angle behavior. That requires display-panel hardware. This prototype does not claim otherwise.
+The workflow artifact is named `privacy-ai-debug-apk`.
+
+## Implemented in this version
+
+- Arabic right-to-left dark interface with purple accents.
+- Local persistence for the protection switch and privacy-level display preference.
+- Android `FLAG_SECURE` is applied to the Privacy AI activity window while protection is enabled. This blocks screenshots and ordinary screen recording of this app's own window only.
+
+## Not implemented yet
+
+- Hiding notifications across Android.
+- Selecting and protecting other installed apps.
+- Automatic schedules.
+
+These are shown as roadmap items, not working switches. Android requires additional system-level integrations and user-granted permissions for some of these behaviors.
+
+## Hardware limitation
+
+A normal Android app cannot reproduce Samsung's hardware Privacy Display viewing-angle behavior. Making the screen appear dark from side angles requires compatible display-panel hardware. The privacy-level slider in this prototype is only a saved visual preference and does not change the physical viewing angle.
