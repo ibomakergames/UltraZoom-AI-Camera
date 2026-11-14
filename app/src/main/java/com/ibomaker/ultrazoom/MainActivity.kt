@@ -291,7 +291,11 @@ class MainActivity : ComponentActivity() {
                                     if (recording != null) {
                                         recording?.stop()
                                         recording = null
-                                    } else if (!hasAudioPermission) audioPermission.launch(Manifest.permission.RECORD_AUDIO)\n                                    else startVideo(videoCapture, hasAudioPermission) { recording = it }
+                                    } else if (!hasAudioPermission) audioPermission.launch(Manifest.permission.RECORD_AUDIO) {
+                                        audioPermission.launch(Manifest.permission.RECORD_AUDIO)
+                                    } else {
+                                        startVideo(videoCapture, hasAudioPermission) { newRecording -> recording = newRecording }
+                                    }
                                 } else takePhoto(imageCapture)
                             },
                         contentAlignment = Alignment.Center
